@@ -220,7 +220,7 @@ v8_to_msgpack(Handle<Value> v8obj, msgpack_object *mo, msgpack_zone *mz, size_t 
 // This method is recursive. It will probably blow out the stack on objects
 // with extremely deep nesting.
 static Handle<Value>
-msgpack_to_v8(msgpack_object *mo) {
+msgpack_to_v8(msgpack_object *mo, bool unpack_binary=false) {
     switch (mo->type) {
     case MSGPACK_OBJECT_NIL:
         return NanNull();
@@ -255,6 +255,12 @@ msgpack_to_v8(msgpack_object *mo) {
     }
 
     case MSGPACK_OBJECT_RAW:
+        if (unpack_binary) {
+            Buffer *buf = Buffer::New(mo->via.raw.ptr, mo->via.raw.size);
+            return v8::Local<Value>::New(buf->handle_);
+        } else {
+            return String::New(mo->via.raw.ptr, mo->via.raw.size);
+        }
         return new_v8_obj<String>(mo->via.raw.ptr, mo->via.raw.size);
 
     case MSGPACK_OBJECT_MAP: {
@@ -332,6 +338,11 @@ static NAN_METHOD(unpack) {
         return NanThrowTypeError("First argument must be a Buffer");
     }
 
+    bool unpack_binary = false;
+    if (args.Length() == 2){
+        unpack_binary = args[1]->ToBoolean()->Value();
+    }
+
     Local<Object> buf = args[0]->ToObject();
 
     MsgpackZone mz;
@@ -346,7 +357,7 @@ static NAN_METHOD(unpack) {
                 new_v8_obj<String>("bytes_remaining"),
                 new_v8_obj<Integer>(static_cast<int32_t>(Buffer::Length(buf) - off))
             );
-            NanReturnValue(msgpack_to_v8(&mo));
+            NanReturnValue(msgpack_to_v8(&mo, unpack_binary));
         } catch (MsgpackException e) {
             return NanThrowError(e.getThrownException());
         }
