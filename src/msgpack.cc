@@ -366,7 +366,7 @@ static NAN_METHOD(unpack) {
         NanReturnUndefined();
 
     default:
-        NanThrowError("Error de-serializing object");
+        return NanThrowError("Error de-serializing object");
     }
 }
 
