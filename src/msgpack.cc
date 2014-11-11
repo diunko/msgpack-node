@@ -248,7 +248,7 @@ msgpack_to_v8(msgpack_object *mo, bool unpack_binary=false) {
         Local<Array> a = new_v8_obj<Array>(mo->via.array.size);
 
         for (uint32_t i = 0; i < mo->via.array.size; i++) {
-            a->Set(i, msgpack_to_v8(&mo->via.array.ptr[i]));
+            a->Set(i, msgpack_to_v8(&mo->via.array.ptr[i], unpack_binary));
         }
 
         return a;
@@ -269,7 +269,7 @@ msgpack_to_v8(msgpack_object *mo, bool unpack_binary=false) {
         for (uint32_t i = 0; i < mo->via.map.size; i++) {
             o->Set(
                 msgpack_to_v8(&mo->via.map.ptr[i].key),
-                msgpack_to_v8(&mo->via.map.ptr[i].val)
+                msgpack_to_v8(&mo->via.map.ptr[i].val, unpack_binary)
             );
         }
 
