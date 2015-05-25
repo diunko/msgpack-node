@@ -256,12 +256,10 @@ msgpack_to_v8(msgpack_object *mo, bool unpack_binary=false) {
 
     case MSGPACK_OBJECT_RAW:
         if (unpack_binary) {
-            Buffer *buf = Buffer::New(mo->via.raw.ptr, mo->via.raw.size);
-            return v8::Local<Value>::New(buf->handle_);
+	  return NanNewBufferHandle(mo->via.raw.ptr, mo->via.raw.size);
         } else {
-            return String::New(mo->via.raw.ptr, mo->via.raw.size);
+	  return new_v8_obj<String>(mo->via.raw.ptr, mo->via.raw.size);
         }
-        return new_v8_obj<String>(mo->via.raw.ptr, mo->via.raw.size);
 
     case MSGPACK_OBJECT_MAP: {
         Local<Object> o = new_v8_obj<Object>();
